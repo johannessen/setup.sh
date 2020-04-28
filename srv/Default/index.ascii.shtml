@@ -1,0 +1,14 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<HTML LANG="en"><HEAD>
+	<TITLE><!--#echo var="HTTP_HOST" --></TITLE>
+	<STYLE TYPE="text/css">
+HTML, BODY { margin: 0; padding: 0; background: white; color: black }
+H1 { margin: 1em; padding: 0 }
+H1, H2 { font-size: 2em; font-family: sans-serif; font-weight: bold }
+H2 {padding: 1em; margin: 0 0 1em; background: #ccc; color: #666 }
+	</STYLE>
+</HEAD><BODY>
+	<H1><!--#echo var="HTTP_HOST" --></H1>
+	<H2><ABBR TITLE="Hypertext Transfer Protocol">HTTP</ABBR> server operating</H2>
+</BODY></HTML>
+

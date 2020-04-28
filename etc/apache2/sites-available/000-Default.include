@@ -1,0 +1,59 @@
+# This is the common configuration for the fallback/default site. Use this by
+# adding an 'Include' directive to the default virtual host configuration.
+
+
+# Make sure to always keep the server's IP address current here, and below.
+#ServerName 198.51.100.163
+
+# We're using SSI to output the correct server name. In case this fails (e. g.
+# when using HTTP/1.0, where there is no usable server name), we need to output
+# some defined string in place of the server name. Therefore we want the IP
+# address for SSIErrorMsg and SSIUndefinedEcho.
+#SSIErrorMsg "198.51.100.163"
+#SSIUndefinedEcho "198.51.100.163"
+
+
+# Content path.
+DocumentRoot /srv/Default
+<Directory /srv/Default>
+	
+	# Access setup.
+	Require all granted
+	
+	# Enable SSI. We do not use IfModule here in order to get an early
+	# failure notification if mod_include is unavailable for some reason.
+	Options IncludesNoExec
+	
+	# Content main file.
+	DirectoryIndex index.ascii.shtml
+	
+	# Enable the option to temporarily replace the SSI main file with
+	# some other file, should that become necessary for some reason.
+	<IfModule mod_negotiation.c>
+		Options +MultiViews
+		DirectoryIndex index.ascii.shtml index
+	</IfModule>
+	Options +FollowSymLinks
+	#AllowOverride All
+	
+</Directory>
+
+# Email address of someone responsible for this particular server.
+ServerAdmin webmaster@example.com
+
+# Available loglevels: trace8, ..., trace1, debug, info, notice, warn,
+# error, crit, alert, emerg.
+# It is also possible to configure the loglevel for particular
+# modules, e.g.
+#LogLevel info ssl:warn
+
+ErrorLog ${APACHE_LOG_DIR}/error.log
+CustomLog ${APACHE_LOG_DIR}/access.log journal
+
+# A shortcut icon is intentionally unavailable.
+<IfModule mod_alias.c>
+	Redirect 410 /favicon.ico
+</IfModule>
+
+
+# vim: syntax=apache ts=4 sw=4 noet

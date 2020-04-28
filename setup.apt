@@ -1,0 +1,60 @@
+# basic tools that are typically available by default
+adduser
+apt
+bash
+cron
+grep
+gzip
+hostname
+less
+passwd
+perl
+sed
+tar
+
+# basic tools that may not be available by default
+bzip2
+curl
+file
+gcc
+git
+make
+openssl
+patch
+ssh
+sudo
+unzip
+vim
+zip
+
+# miscellaneous tools or user software
+
+
+# miscellaneous server or management software
+anacron
+aptitude
+gnupg
+mariadb-client
+mariadb-server
+#monit - no package in buster, use backports
+
+# MTA
+postfix
+
+# Apache (Wordpress etc.)
+apache2
+php
+php-bcmath
+php-curl
+php-gd
+php-imagick
+ghostscript
+php-json
+php-mbstring
+php-mysql
+php-xml
+php-zip
+
+# Let's Encrypt
+certbot
+python-certbot-apache

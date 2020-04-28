@@ -1,0 +1,6 @@
+# /etc/sudoers.d/wheel
+
+# Group wheel is the admin group that has direct access to root privileges
+# for convenience. Use with caution!
+
+%wheel  ALL=(ALL) NOPASSWD: ALL

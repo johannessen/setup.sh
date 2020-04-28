@@ -1,0 +1,218 @@
+#! /bin/bash
+
+# usage:
+# SETUPPATH="..."
+# . "$TOOLSPATH/tools"
+
+# This file is idempotent (may safely be run multiple times).
+
+# Avoid tabs in this file because lines from it may need to be
+# copy-pasted directly into a terminal from time to time, where tabs
+# may trigger auto-completion.
+
+
+
+[ "$0" == "$BASH_SOURCE" ] && >&2 echo "Run tools using source (.)!" && exit 1
+SETUPPATH_GLOBAL=${SETUPPATH_GLOBAL:-"$(dirname "$(realpath "$BASH_SOURCE")")"}
+SETUPPATH=${SETUPPATH:-"$(dirname "$(realpath "$BASH_SOURCE")")"}  # fallback only - supposed to be set by client
+if which apt-get > /dev/null
+then
+  which adduser patch > /dev/null || DEBIAN_FRONTEND=noninteractive apt-get -y install adduser patch
+fi
+
+
+
+setup_repo_permissions () {
+  # usage: setup_repo_permissions /path/to/repo/etc/configfile R
+  # Confirms that the specified file exists and sets its permissions.
+  
+  [ $# -ge 1 ] || return 9  # file path (required argument)
+  PATH_REP="$1"
+  [ -e "$PATH_REP" ] || return 3
+  
+  if [ $# -ge 2 ]  # permissions
+  then
+    if [ "$2" = "X" ]
+    then
+      chmod -v 755 "$PATH_REP"
+    elif [ "$2" = "R" ]
+    then
+      chmod -v 644 "$PATH_REP"
+    else
+      chmod -v "$2" "$PATH_REP"
+    fi
+  fi
+}
+
+
+
+setup_copy () {
+  # usage: setup_copy /etc/configfile R
+  # Creates the config file at the specified location by copying from
+  # the repository.
+  
+  [ $# -lt 1 ] && echo "setup_copy error 9: file path (required argument)" && return 9
+  PATH_SYS="$1"
+  PATH_REP="$SETUPPATH$1"
+  SOURCE_MSG=local
+  
+  if [ ! -e "$PATH_REP" ]
+  then
+    PATH_REP="$SETUPPATH_GLOBAL$1"
+    SOURCE_MSG=global
+  fi
+  
+  if ! setup_repo_permissions "$PATH_REP" $2  # 2nd arg is optional
+  then
+    echo "setup_copy error 3: '$1' '$2' ($SOURCE_MSG)" && return 3
+  fi
+  
+  [ -e "$PATH_SYS" ] && mv -v "$PATH_SYS" "$PATH_REP.orig"
+  echo "copying $PATH_SYS from $SOURCE_MSG"
+  mkdir -p `dirname $PATH_SYS`
+  cp "$PATH_REP" "$PATH_SYS"
+}
+
+
+
+setup_patch () {
+  # usage: setup_patch /etc/configfile
+  # Creates the config file at the specified location by patching the
+  # existing file at that location with a patch from the repository.
+  
+  # create patch:
+  # diff -U2
+  
+  [ $# -lt 1 ] && echo "setup_patch error 9: file path (required argument)" && return 9
+  PATH_SYS="$1"
+  PATH_REP="$SETUPPATH$1"
+  SOURCE_MSG=local
+  
+  [ ! -e "$PATH_SYS" ] && echo "setup_patch error 3: '$1' (sys)" && return 3
+  if [ ! -e "$PATH_REP.patch" ]
+  then
+    PATH_REP="$SETUPPATH_GLOBAL$1"
+    SOURCE_MSG=global
+  fi
+  [ ! -e "$PATH_REP.patch" ] && echo "setup_patch error 3: '$1' ($SOURCE_MSG)" && return 3
+  
+  patch -b -V simple -z .orig "$PATH_SYS" < "$PATH_REP.patch"
+  [ -e "$PATH_SYS.orig" ] && mv -v "$PATH_SYS.orig" "$PATH_REP.orig"
+}
+
+
+
+setup_undo () {
+  # usage: setup_undo /etc/configfile
+  # Moves the .orig copy of a replaced original config file from the repository
+  # back to the specified location, effectively undoing an earlier setup_copy
+  # or setup_patch so that a setup script can be run again. However, if there
+  # was no original file that was replaced, this function is a no-op.
+  # Intended for meticulous manual operation, not for use by scripts.
+  
+  [ $# -lt 1 ] && echo "setup_undo error 9: file path (required argument)" && return 9
+  PATH_SYS="$1"
+  
+  PATH_REP="$SETUPPATH$1"
+  [ -e "$PATH_REP.orig" ] && mv -v "$PATH_REP.orig" "$PATH_SYS"
+  PATH_REP="$SETUPPATH_GLOBAL$1"
+  [ -e "$PATH_REP.orig" ] && mv -v "$PATH_REP.orig" "$PATH_SYS"
+}
+
+
+
+setup_copy_maybe () {
+  # usage: setup_copy_maybe /etc/configfile R
+  # Creates the config file at the specified location by copying from
+  # the repository. Just like setup_copy, except that files missing
+  # in the repository are not treated as error.
+  
+  [ $# -lt 1 ] && echo "setup_copy_maybe error 9: file path (required argument)" && return 9
+  if [ ! -e "$SETUPPATH$1" ] && [ ! -e "$SETUPPATH_GLOBAL$1" ]
+  then
+    echo "setup_copy_maybe: skipping '$1' (not found)"
+    return 0
+  fi
+  
+  setup_copy "$1" "$2"
+}
+
+
+
+setup_enable_backports () {
+  # usage: setup_enable_backports ; apt-get update
+  # (idempotent)
+  
+  # Backports are a potential security risk, see
+  # <https://backports.debian.org/Instructions/> or
+  # <https://blog.fefe.de/?ts=a39129a0>. However,
+  # it may sometimes be difficult to avoid them entirely.
+  
+  PATH_SYS=/etc/apt/sources.list.d/backports.list
+  PATH_REP="$SETUPPATH_GLOBAL$PATH_SYS"
+  
+  echo -n "Enabling backports ..."
+  [ -z "$(diff -q "$PATH_SYS" "$PATH_REP.orig" 2>&1)" ] && { echo " already enabled." ; return 0 ;}
+  echo
+  
+  setup_copy "$PATH_SYS" R
+}
+
+
+
+setup_user () {
+  # usage: setup_user "loginname" "Real Name"
+  # Adds the specified user to the system with _no_ sudo privileges.
+  
+  echo "setup_user $1 '$2'"
+  adduser --disabled-password --gecos "$2" "$1"
+  mkdir -p "/home/$1/.ssh"
+  touch "/home/$1/.ssh/authorized_keys"
+  chmod 700 "/home/$1/.ssh"
+  chmod 644 "/home/$1/.ssh/authorized_keys"
+  chown -R "$1:$1" "/home/$1/.ssh"
+}
+
+
+
+setup_super_user () {
+  # usage: setup_super_user "loginname" "Real Name"
+  # Adds the specified user to the system with full sudo privileges.
+  
+  echo -n "setup_super_user: "
+  setup_user "$1" "$2"
+  adduser "$1" wheel  # sudoer
+  adduser "$1" adm  # read log files
+}
+
+
+
+setup_insecure_password () {
+  # usage: PASSWORD=`setup_insecure_password "intended-purpose"`
+  # Returns a fresh pseudo-random password. While this password is not
+  # cryptographically secure, it might still be good enough for some
+  # low-security applications.
+  
+  p=`perl -e '$l=$ARGV[0]||16; @c=(("A".."Z"),("a".."z"),(0..9)); $n=$#c+1; for(1..$l){$p.=$c[int(rand($n))];} print $p;' "$2"`
+  
+  # log the password for the root user, so that it isn't lost right away
+  f="$SETUPPATH/credentials.new"
+  touch "$f"
+  chmod 0600 "$f"
+  echo -n "${1:-"..."}: $p  / created " >> "$f"
+  date >> "$f"
+  
+  echo "$p"
+}
+
+
+
+setup_user_forward () {
+  # usage: setup_user_forward "loginname" "mailbox@host.example"
+  # Installs a .forward file in the user's home dir.
+  
+  echo "$2" > "/home/$1/.forward"
+  chown "$1":"$1" "/home/$1/.forward"
+  chmod 644 "/home/$1/.forward"
+}
+

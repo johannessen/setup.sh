@@ -1,0 +1,21 @@
+--- /etc/apache2/conf-available/security.conf	2014-09-18 08:17:00.000000000 +0000
++++ /etc/apache2/conf-available/security.conf	2019-05-10 12:41:00.000000000 +0000
+@@ -22,6 +22,6 @@
+ # Set to one of:  Full | OS | Minimal | Minor | Major | Prod
+ # where Full conveys the most information, and Prod the least.
+-#ServerTokens Minimal
+-ServerTokens OS
++ServerTokens Minimal
++#ServerTokens OS
+ #ServerTokens Full
+ 
+@@ -54,6 +54,9 @@
+ #<DirectoryMatch "/\.svn">
+ #   Require all denied
+ #</DirectoryMatch>
++<DirectoryMatch "/\.git/">
++   Require all denied
++</DirectoryMatch>
+ 
+ #
+ # Setting this header will prevent MSIE from interpreting files as something

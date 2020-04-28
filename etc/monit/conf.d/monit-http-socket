@@ -1,0 +1,8 @@
+# Enable issuing Monit commands from the command line,
+# such as 'monit status' or 'monit restart service'.
+# Using a socket seems to avoid the need for an open
+# port. A password must be present here, but it
+# doesn't seem to actually be used for anything.
+
+set httpd unixsocket /var/run/monit.sock
+    allow no-real-user:5f52fe6Gslth092wvwEh4A

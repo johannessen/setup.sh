@@ -1,0 +1,20 @@
+#! /bin/bash
+
+cd /etc/postfix
+
+# reload /etc/aliases
+newaliases
+
+# reload /etc/postfix/virtual
+postmap hash:virtual
+
+# reload /etc/postfix/access_postgrey
+if [ -r access_postgrey ]
+then
+	postmap hash:access_postgrey
+else
+	rm -f access_postgrey.db
+fi
+
+# reload main.cf and hashed databases
+postfix reload

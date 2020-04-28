@@ -1,0 +1,12 @@
+#!/bin/sh
+
+# Using TLS session tickets without restarting the web server with an
+# appropriate frequency (e.g. daily) compromises perfect forward
+# secrecy. Restart the web server frequently to invalidate the TLS
+# session ticket (unless the configtest fails, in which case we don't
+# want to disturb the server without supervision)
+
+# required for Apache <= 2.4.10 only; 2.4.11 supports SSLSessionTickets off
+# https://httpd.apache.org/docs/2.4/mod/mod_ssl.html#sslsessiontickets
+
+apachectl configtest 2> /dev/null && apachectl graceful || apachectl configtest

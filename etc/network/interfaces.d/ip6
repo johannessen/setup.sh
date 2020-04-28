@@ -1,0 +1,6 @@
+iface eth0 inet6 static
+       address 2001:db8::163
+       netmask 64
+       gateway fe80::1
+
+# http://www.netcup-wiki.de/wiki/Zus%C3%A4tzliche_IP_Adresse_konfigurieren#IPv6%7C

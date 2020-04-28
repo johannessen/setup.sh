@@ -1,0 +1,15 @@
+--- /etc/bash.bashrc	2019-04-18 06:12:00.000000000 +0000
++++ /etc/bash.bashrc	2020-04-26 00:00:00.000000000 +0000
+@@ -19,5 +19,5 @@
+ # but only if not SUDOing and have SUDO_PS1 set; then assume smart user.
+ if ! [ -n "${SUDO_USER}" -a -n "${SUDO_PS1}" ]; then
+-  PS1='${debian_chroot:+($debian_chroot)}\u@\h:\w\$ '
++  PS1='\h:\w ${debian_chroot:+($debian_chroot)}\u\$ '
+ fi
+ 
+@@ -58 +58,5 @@
+ fi
++
++alias ls="ls --color=auto"
++# do updates manually because sometimes packages ask for manual config changes, where -y can break installs
++alias update="sudo apt-get update && sudo apt-get --show-upgraded --show-progress dist-upgrade || (echo ; echo 'error')"
