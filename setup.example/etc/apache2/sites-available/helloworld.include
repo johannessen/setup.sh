@@ -1,0 +1,27 @@
+# Common configuration for 'Hello World' site
+
+
+DocumentRoot /srv/hello-world
+<Directory /srv/hello-world>
+	Require all granted
+	
+	Options MultiViews
+	AllowOverride All
+</Directory>
+
+ServerAdmin webmaster@example.net
+
+ErrorLog ${APACHE_LOG_DIR}/error.log
+LogLevel warn
+CustomLog /srv/Log/helloworld.log journal
+
+# misc site-specific setup:
+<IfModule mod_mime.c>
+	AddCharset UTF-8 .html
+</IfModule>
+<IfModule mod_alias.c>
+	Redirect 410 /favicon.ico
+</IfModule>
+
+
+# vim: syntax=apache ts=4 sw=4 noet

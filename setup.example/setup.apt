@@ -1,0 +1,8 @@
+# Specify any Debian packages you need to install in this file.
+
+# As an exception to setup.sh's general philosohy to ignore the
+# "global" file whenever a file with an identical name exists in
+# the "local" setup tree, packages listed here are installed in
+# addition to the ones specified in the "global" setup.apt file.
+
+apache2
