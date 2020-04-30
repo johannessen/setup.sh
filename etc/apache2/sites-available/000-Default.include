@@ -3,14 +3,14 @@
 
 
 # Make sure to always keep the server's IP address current here, and below.
-#ServerName 198.51.100.163
+ServerName 198.51.100.163
 
 # We're using SSI to output the correct server name. In case this fails (e. g.
 # when using HTTP/1.0, where there is no usable server name), we need to output
 # some defined string in place of the server name. Therefore we want the IP
 # address for SSIErrorMsg and SSIUndefinedEcho.
-#SSIErrorMsg "198.51.100.163"
-#SSIUndefinedEcho "198.51.100.163"
+SSIErrorMsg "198.51.100.163"
+SSIUndefinedEcho "198.51.100.163"
 
 
 # Content path.
