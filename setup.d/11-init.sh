@@ -45,6 +45,7 @@ setup_patch /etc/ssh/sshd_config
 
 setup_copy /etc/motd R
 setup_copy /etc/profile.d/motd.sh X
+setup_copy /etc/update-motd.d/10-uname X
 setup_copy /etc/init.d/hostname_vps X
 
 if [ -z "$HOSTNAME_VPS" ]

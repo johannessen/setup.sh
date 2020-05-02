@@ -1,0 +1,6 @@
+#!/bin/sh
+
+NAME="Debian `uname -o`"
+[ -f /etc/os-release ] && . /etc/os-release
+echo -n "$NAME `cat /etc/debian_version` ($VERSION_CODENAME) "
+uname -v
