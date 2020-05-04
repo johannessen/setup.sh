@@ -25,14 +25,9 @@ DocumentRoot /srv/Default
 	Options IncludesNoExec
 	
 	# Content main file.
+	# Only acts as fallback, in case mod_rewrite is disabled.
 	DirectoryIndex index.ascii.shtml
 	
-	# Enable the option to temporarily replace the SSI main file with
-	# some other file, should that become necessary for some reason.
-	<IfModule mod_negotiation.c>
-		Options +MultiViews
-		DirectoryIndex index.ascii.shtml index
-	</IfModule>
 	Options +FollowSymLinks
 	#AllowOverride All
 	
@@ -50,10 +45,21 @@ ServerAdmin webmaster@example.com
 ErrorLog ${APACHE_LOG_DIR}/error.log
 CustomLog ${APACHE_LOG_DIR}/access.log journal
 
-# A shortcut icon is intentionally unavailable.
-<IfModule mod_alias.c>
-	Redirect 410 /favicon.ico
+# The 421 (Misdirected Request) status code indicates that the request
+# was directed at a server that is not configured to produce a response
+# for the requested hostname.
+<IfModule mod_rewrite.c>
+	RewriteEngine on
+	
+	# A shortcut icon is intentionally unavailable.
+	RewriteRule ^/favicon.ico$ - [R=410,L]
+	
+	RewriteCond /srv/Default/%{REQUEST_URI} !-f
+	RewriteCond /srv/Default/%{REQUEST_URI} !-l
+	RewriteRule !^/server-status - [R=421]
+	# monit requests /server-status and expects 200 OK
 </IfModule>
+ErrorDocument 421 /index.ascii.shtml
 
 
 # vim: syntax=apache ts=4 sw=4 noet
