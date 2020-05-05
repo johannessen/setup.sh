@@ -1,4 +1,8 @@
 #! /bin/bash
+
+# Abort execution if any command in these scripts fails.
+# Note that set -e is highly problematic and non-portable,
+# see <https://mywiki.wooledge.org/BashFAQ/105>.
 set -e
 
 echo -n "Setup script started: "
@@ -9,8 +13,6 @@ date
 # TODO: Should we assume that SETUPPATH is '..' by default? Maybe ... but
 # that's only useful if the global setup by default actually does produce
 # a working server config (which of course is the goal)!
-
-#SETUP_DRY_RUN=${SETUP_DRY_RUN-0}
 
 # make sure we have everything we need *before* starting the setup process
 # this is important because if we don't the script may fail and leave the system in an inconsistent state, creating a need to reinstall a fresh system all over again
@@ -59,8 +61,6 @@ SETUPPATH_GLOBAL="$(dirname "$(realpath "$BASH_SOURCE")")"
 echo "SETUPPATH=\"$SETUPPATH\""
 echo "SETUPPATH_GLOBAL=\"$SETUPPATH_GLOBAL\""
 cd "$SETUPPATH" ; pwd | grep -q "^$SETUPPATH$" || exit 1
-
-#chown -R root:root "$SETUPPATH" "$SETUPPATH_GLOBAL"
 
 . "$SETUPPATH_GLOBAL/setup.tools"
 
@@ -117,14 +117,20 @@ do
   
   if is_runnable_setup_script "$SETUP_LOCAL_DIR/$f"
   then
-    is_runnable_setup_script "$SETUP_GLOBAL_DIR/$f" && SETUP_GLOBAL_IGNORED="; global ignored" || SETUP_GLOBAL_IGNORED=
-    echo "Running setup script '$f' (local$SETUP_GLOBAL_IGNORED)."
-    [ ! -z "$SETUP_DRY_RUN" ] || . "$SETUP_LOCAL_DIR/$f"
+    is_runnable_setup_script "$SETUP_GLOBAL_DIR/$f" && s="local; global ignored" || s="local"
+    echo "Running setup script '$f' ($s)."
+    if ! (( "$SETUP_DRY_RUN" ))
+    then
+      . "$SETUP_LOCAL_DIR/$f"
+    fi
   
   elif is_runnable_setup_script "$SETUP_GLOBAL_DIR/$f"
   then
     echo "Running setup script '$f'."
-    [ ! -z "$SETUP_DRY_RUN" ] || . "$SETUP_GLOBAL_DIR/$f"
+    if ! (( "$SETUP_DRY_RUN" ))
+    then
+      . "$SETUP_GLOBAL_DIR/$f"
+    fi
   
   elif [ "$f" = "~~~" ]
   then
@@ -138,8 +144,7 @@ done
 # The option `set -e` should normally not cause an exit after a
 # `while` condition fails, but for some reason, it does just that in
 # this script. Therefore, any code in this position after the while
-# loop is never reached. Note that set -e is highly problematic and
-# non-portable, see <https://mywiki.wooledge.org/BashFAQ/105>. We
-# solve this by introducing a special name "~~~" (typically sorted
-# last), and use that as the marker for a successful completion.
+# loop is never reached. We solve this by introducing a special name
+# "~~~" (which is typically sorted last), and use that as the marker
+# for a successful completion.
 
