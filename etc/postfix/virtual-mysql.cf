@@ -1,0 +1,25 @@
+# Example virtual-mysql.cf
+
+hosts = 127.0.0.1
+# NB: We absolutely positively *have* to use the IP address here, because if
+# we were to use 'localhost', postfix would attempt to connect to the local
+# unix socket file instead, which is outside postfix's chroot'ed environment.
+# See proxymap(8) for a possible solution.
+user = postfix
+password = MYSQL_POSTFIX_PASSWORD
+
+dbname = postfix
+query = SELECT `redirect` FROM `virtual` WHERE `local` = '%u'
+
+domain = example.net
+
+# CREATE TABLE `virtual` (
+#   `id` SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT,
+#   `local` VARCHAR(80) CHARACTER SET ascii NOT NULL COMMENT '@example.net',
+#   `redirect` VARCHAR(80) CHARACTER SET ascii DEFAULT 'root',
+#   `comment` VARCHAR(160) DEFAULT NULL,
+#   `created` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+#   `updated` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+#   PRIMARY KEY (`id`),
+#   KEY `query` (`local`)
+# ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
