@@ -25,7 +25,7 @@ echo -n "Checking for \$HOSTNAME_VPS ... "
 [ ! -z "$HOSTNAME_VPS" ] && echo "found $HOSTNAME_VPS." || { echo "is unset!" ; SETUP_PREREQ_OK= ;}
 
 setup_check_dns () {
-  r=`host -t "$1" "$HOSTNAME_VPS" 2> /dev/null | sed -e 's/.* //'` || true
+  r=`host -t "$1" "$HOSTNAME_VPS" 2> /dev/null | grep -v alias | sed -e 's/.* //'` || true
   [ -z "$r" ] && return 1
   echo "$r" | grep -v "^[0-9a-fA-F:]*[0-9.]*$" > /dev/null && return 1
   echo "$r" && return 0
