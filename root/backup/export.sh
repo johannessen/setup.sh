@@ -66,6 +66,11 @@ then
   tar -rf serverconfig.tar credentials.private.orig
 fi
 
+# add SSH host keys (to avoid false MITM warnings)
+mkdir ssh
+cp /etc/ssh/ssh_host_*_key ssh/
+tar -rf serverconfig.tar ssh/*
+
 # add SSL certificates (volatile b/c letsencrypt issues new ones every other month)
 if [ -e /etc/letsencrypt/accounts ]
 then
@@ -82,12 +87,9 @@ then
 fi
 
 # DON'T encrypt serverconfig dump
-if [ -e serverconfig.tar ]
-then
-  bzip2 -c serverconfig.tar > serverconfig.tar.bz2
-  tar -rf "$BACKUPFILE" serverconfig.tar.bz2
-  rm -Rf credentials.private.orig le-archive le-accounts le-renewal le-renewal-disabled le-live serverconfig.tar serverconfig.tar.bz2
-fi
+bzip2 -c serverconfig.tar > serverconfig.tar.bz2
+tar -rf "$BACKUPFILE" serverconfig.tar.bz2
+rm -Rf credentials.private.orig ssh le-archive le-accounts le-renewal le-renewal-disabled le-live serverconfig.tar serverconfig.tar.bz2
 
 
 

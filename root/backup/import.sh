@@ -56,6 +56,32 @@ fi
 
 
 
+echo "Importing SSH host keys..."
+
+# generate comment and public keys
+c="root@`hostname`"
+shopt -s nullglob  # avoid literal '*' in case of no results
+for f in ssh/ssh_host_*_key
+do
+  echo -n "$f " | sed -e 's|ssh/||'
+  ssh-keygen -lf "$f" | cut -d ' ' -f 1,2  # display fingerprint
+  ssh-keygen -cf "$f" -C "$c" &> /dev/null
+  if ! [ -f "$f.pub" ]
+  then
+    ssh-keygen -yf "$f" | sed -e "1s/\$/ $c/" > "$f.pub"
+  fi
+done
+# move keys into place and set permissions
+for f in ssh/*
+do
+  mv "$f" "/etc/$f"
+done
+chmod 600 /etc/ssh/ssh_host_*_key
+chmod 644 /etc/ssh/ssh_host_*_key.pub
+systemctl reload sshd
+
+
+
 echo "Importing Let's Encrypt accounts and certificates..."
 
 if [ -e le-accounts ]
