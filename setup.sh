@@ -95,14 +95,17 @@ setup_finished () {
   echo -n "Setup script finished: "
   date
   echo
-  # prevent accidental execution:
-  [ ! -z "$SETUP_DRY_RUN" ] || chmod a-x "$SETUPPATH/setup.sh" "$SETUPPATH_GLOBAL/setup.sh"
   exit 0
 }
 
 SETUP_LOCAL_DIR="$SETUPPATH/setup.d"
 SETUP_GLOBAL_DIR="$SETUPPATH_GLOBAL/setup.d"
+
+SETUP_LOCAL_FINISHED="$SETUPPATH/setup.finished.d"
+SETUP_GLOBAL_FINISHED="$SETUPPATH_GLOBAL/setup.finished.d"
+mkdir -p "$SETUP_LOCAL_FINISHED" "$SETUP_GLOBAL_FINISHED"
 SETUPFAIL=0
+
 shopt -s nullglob  # avoid literal '*' in case of empty dirs
 for f in "$SETUP_GLOBAL_DIR"/* "$SETUP_LOCAL_DIR"/* "~~~"
 do
@@ -121,7 +124,9 @@ do
     echo "Running setup script '$f' ($s)."
     if ! (( "$SETUP_DRY_RUN" ))
     then
-      . "$SETUP_LOCAL_DIR/$f"
+      SETUP_FILE="$SETUP_LOCAL_DIR/$f"
+      . "$SETUP_FILE"
+      mv -n "$SETUP_FILE" "$SETUP_LOCAL_FINISHED/"
     fi
   
   elif is_runnable_setup_script "$SETUP_GLOBAL_DIR/$f"
@@ -129,7 +134,9 @@ do
     echo "Running setup script '$f'."
     if ! (( "$SETUP_DRY_RUN" ))
     then
-      . "$SETUP_GLOBAL_DIR/$f"
+      SETUP_FILE="$SETUP_GLOBAL_DIR/$f"
+      . "$SETUP_FILE"
+      mv -n "$SETUP_FILE" "$SETUP_GLOBAL_FINISHED/"
     fi
   
   elif [ "$f" = "~~~" ]
