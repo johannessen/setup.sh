@@ -6,8 +6,6 @@ echo
 echo "We will now install Debian software packages."
 echo
 
-setup_enable_backports  # monit
-
 apt-get update
 apt-get upgrade
 
@@ -20,14 +18,6 @@ DEBIAN_FRONTEND=noninteractive apt-get -y install $SETUP_GLOBAL_PKG $SETUP_LOCAL
 
 
 ### handle problems with Debian packages
-
-# monit isn't in buster for some reason
-DEBIAN_FRONTEND=noninteractive apt-get -y -t buster-backports install monit
-setup_copy /etc/monit/conf.d/monit-http-socket 600
-setup_copy_maybe /etc/monit/conf.d/email-alerts 600
-ln -s ../conf-available/apache2 /etc/monit/conf-enabled/apache2
-ln -s ../conf-available/cron /etc/monit/conf-enabled/cron
-ln -s ../conf-available/mysql /etc/monit/conf-enabled/mysql
 
 # Some software (such as DBD::mysql 4.050) expects to find a mysql_config
 # binary on the path. MariaDB doesn't seem to provide that my default, so

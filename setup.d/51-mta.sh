@@ -19,5 +19,3 @@ setup_copy /root/postgreyreport.pl X || true
 
 /etc/postfix/reload
 
-ln -s ../conf-available/postfix /etc/monit/conf-enabled/postfix
-

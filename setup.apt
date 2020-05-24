@@ -36,7 +36,6 @@ aptitude
 gnupg
 mariadb-client
 mariadb-server
-#monit - no package in buster, use backports
 
 # MTA
 postfix
