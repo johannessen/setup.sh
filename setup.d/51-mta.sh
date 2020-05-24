@@ -13,9 +13,9 @@ setup_copy /etc/postfix/reload X
 [ -e "/etc/postfix/virtual" ] || setup_copy /etc/postfix/virtual R
 
 echo "Configure postgrey (if available) ..."
-setup_copy /etc/postfix/access_postgrey R || true
 setup_patch /etc/default/postgrey || true
-setup_copy /root/postgreyreport.pl X || true
+setup_copy_maybe /etc/postfix/access_postgrey R
+setup_copy_maybe /root/postgreyreport.pl X
 
 /etc/postfix/reload
 
