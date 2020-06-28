@@ -10,8 +10,13 @@ rm -f /var/www/.wp-cli/cache/core/wordpress-*.tar.gz /var/www/.wp-cli/cache/plug
 
 if apachectl configtest
 then
-  apachectl stop > /dev/null || true
-  apachectl start
+  systemctl start apache2
+  if systemctl is-active apache2
+  then
+    apachectl graceful
+  else
+    apachectl start
+  fi
 fi
 
 
@@ -27,7 +32,7 @@ fi
 
 setup_copy /root/perlbrew.sh X
 
-/root/perlbrew.sh perl-5.30.2
+/root/perlbrew.sh perl-5.32.0
 
 [ -z "$PERLBREW_ROOT" ] && . /opt/perlbrew/etc/bashrc
 export TESTING="--notest"
