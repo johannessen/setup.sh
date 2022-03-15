@@ -34,7 +34,7 @@ may have to be set manually using `export`.
 Prerequisites
 -------------
 
-This version of `setup.sh` is designed for Debian 10 "buster".
+This version of `setup.sh` is designed for Debian 11 "bullseye".
 
 When executed, `setup.sh` expects the following:
 
@@ -54,7 +54,7 @@ Using setup.sh for custom hosts
 -------------------------------
 
 First of all, you need to understand that this repository's `master`
-branch may change at an time in a way that is not compatible with
+branch may change at any time in a way that is not compatible with
 your situation. As a user of setup.sh, you are encouraged to **clone
 or fork this repository,** create a new branch in your clone or fork
 and only work with the "local" tree inside a new custom directory in

@@ -1,7 +1,8 @@
 --- /etc/mime.types	2014-10-04 13:33:00.000000000 +0000
 +++ /etc/mime.types	2014-12-23 00:00:00.000000000 +0000
-@@ -442,2 +442,2 @@
+@@ -1468 +1468 @@
 -#application/x-httpd-php			phtml pht php
--#application/x-httpd-php-source			phps
 +application/x-httpd-php			phtml pht php
+@@ -1473 +1473 @@
+-#application/x-httpd-php-source			phps
 +application/x-httpd-php-source			phps

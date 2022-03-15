@@ -7,3 +7,10 @@
   ending in `.sh` (or at least don't execute files with names ending
   in `~`). Files that are unfit for execution may exist in `setup.d`
   by accident, for example as backup files created by certain editors.
+
+- Add a mechanism to allow for passing environment variables between setup
+  scripts using persistent storage, to avoid their values being lost in
+  case of interruption / manual script execution. This mechanism could
+  conceivably work in a similar fashion as `setup_insecure_password`; the
+  variable storage file would then have to be sourced on the next setup run
+  (if it exists).

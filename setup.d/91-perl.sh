@@ -28,20 +28,18 @@ fi
 # ensure that Apache behaves as it should during this state. Either 503s need
 # to be served or the server shouldn't be running at all.
 
-# A reboot before brewing perl may be useful to be sure it picks up the new host name. -- TODO: I think I got this from some guide, but it seems to be BS. Remove this comment unless issues surface soon!
-
 setup_copy /root/perlbrew.sh X
 
-/root/perlbrew.sh perl-5.32.0
-
-[ -z "$PERLBREW_ROOT" ] && . /opt/perlbrew/etc/bashrc
-export TESTING="--notest"
+/root/perlbrew.sh perl-5.34.1
 
 # at this point (before installing modules) the system takes up approx. 3 GB on disk
 # /root will eventually take up at least another 3 GB (due to backups)
 
+. /opt/perlbrew/etc/bashrc
+export TESTING="--notest"
+
 # some XS modules require additional packages for linking
-DEBIAN_FRONTEND=noninteractive apt-get -y install libssl-dev libmariadbclient-dev
+DEBIAN_FRONTEND=noninteractive apt-get -y install libssl-dev libmariadb-dev
 cpanm $TESTING IO::Socket::SSL DBD::MariaDB || SETUPFAIL=810
 #cpanm --notest DBD::mysql || SETUPFAIL=811  # --notest: incompatibilities between MariaDB and MySQL may show up
 

@@ -45,9 +45,9 @@ apache2
 php
 php-bcmath
 php-curl
-php-gd
 php-imagick
 ghostscript
+php-intl
 php-json
 php-mbstring
 php-mysql
@@ -56,4 +56,4 @@ php-zip
 
 # Let's Encrypt
 certbot
-python-certbot-apache
+python3-certbot-apache
