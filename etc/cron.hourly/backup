@@ -1,6 +1,8 @@
 #!/bin/sh
 
-/root/backup/export.sh
+if test -x /usr/sbin/logrotate
+then
+  /usr/sbin/logrotate /root/backup/rotate.conf
+fi
 
-test -x /usr/sbin/logrotate || exit 0
-/usr/sbin/logrotate /root/backup/rotate.conf
+/root/backup/export.sh
