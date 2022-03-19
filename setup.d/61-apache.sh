@@ -50,6 +50,7 @@ a2enmod -q env
 a2enmod -q mime
 a2enmod -q negotiation
 a2enmod -q php7.4
+a2enmod -q socache_shmcb
 a2enmod -q ssl
 
 setup_copy "$APACHE_DIR/conf-available/ssl.conf" R
