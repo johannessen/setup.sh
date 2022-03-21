@@ -17,6 +17,7 @@ bzip2
 curl
 file
 gcc
+g++
 git
 make
 openssl
