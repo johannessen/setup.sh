@@ -14,3 +14,5 @@
   conceivably work in a similar fashion as `setup_insecure_password`; the
   variable storage file would then have to be sourced on the next setup run
   (if it exists).
+
+- Investigate `cpm` to speed up Perl module installation after the brew.

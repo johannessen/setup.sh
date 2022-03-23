@@ -1,53 +1,35 @@
 #!bash
 
 
-# Start Apache and clean up
+# Perl
+echo
+echo "We will now brew Perl and install modules."
+echo
 
-echo "Apache done."
+# Building Perl from source and installing modules is slow. Ensure that
+# all services that don't depend on these modules (postfix etc.) are up
+# and running at this point. Web services that do depend on a recent
+# Perl version or on one of these modules should ideally serve 503s.
 
-rm "$BACKUPSRVPATH"
-rm -f /var/www/.wp-cli/cache/core/wordpress-*.tar.gz /var/www/.wp-cli/cache/plugin/*.zip /var/www/.wp-cli/cache/theme/*.zip
-
-if apachectl configtest
-then
-  systemctl start apache2
-  if systemctl is-active apache2
-  then
-    apachectl graceful
-  else
-    apachectl start
-  fi
-fi
-
-
-
-### Perl
-# Building & installing Perl is ridiculously slow. It might be preferable to
-# get postfix up and running ASAP, then perhaps Apache to be able to at least
-# serve static pages, and only then start brewing Perl and stuff. Also, we must
-# ensure that Apache behaves as it should during this state. Either 503s need
-# to be served or the server shouldn't be running at all.
+# some XS modules may require additional packages for linking
+DEBIAN_FRONTEND=noninteractive apt-get -y install \
+  libmariadb-dev libmariadb-dev-compat libssl-dev libxml2-dev
 
 setup_copy /root/perlbrew.sh X
 
-/root/perlbrew.sh perl-5.34.1
-
-# at this point (before installing modules) the system takes up approx. 3 GB on disk
-# /root will eventually take up at least another 3 GB (due to backups)
+if /root/perlbrew.sh perl-5.34.1
+then
+  rm -Rf /root/.cpanm/work /root/.cpanm/latest-build /root/.cpanm/build.log
+  rmdir /root/.cpanm || true
+else
+  echo "perlbrew.sh returned with status $?."
+  SETUPFAIL=800
+  false
+fi
 
 . /opt/perlbrew/etc/bashrc
-export TESTING="--notest"
-
-# some XS modules require additional packages for linking
-DEBIAN_FRONTEND=noninteractive apt-get -y install libssl-dev libmariadb-dev
-cpanm $TESTING IO::Socket::SSL DBD::MariaDB || SETUPFAIL=810
-#cpanm --notest DBD::mysql || SETUPFAIL=811  # --notest: incompatibilities between MariaDB and MySQL may show up
 
 
 
-rm -Rf /root/.cpanm/work /root/.cpanm/latest-build /root/.cpanm/build.log
-rmdir /root/.cpanm || true
-
-echo
 echo "Perl install: All done!"
 

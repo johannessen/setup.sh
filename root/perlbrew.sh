@@ -1,9 +1,21 @@
 #! /bin/bash
 
+# This script is part of the setup.sh concept, designed for Debian.
+# Running it on other operating systems may produce unexpected results.
 
-export PERLBREW_ROOT=/opt/perlbrew
+if [ "$(uname)" = "Darwin" ]
+then
+  : ${BREW_JOBS:=6}
+  : ${PERLBREW_ROOT:=~/.perlbrew}
+  : ${TASK_BELIKE:=AJNN}
+fi
 
-if ! which perlbrew > /dev/null && [ -e "$PERLBREW_ROOT/etc/bashrc" ]
+# On dual core CPUs, 2 jobs save a lot of time, while even more jobs save very little.
+: ${BREW_JOBS:=3}
+: ${PERLBREW_ROOT:=/opt/perlbrew}
+export BREW_JOBS PERLBREW_ROOT
+
+if [ -e "$PERLBREW_ROOT/etc/bashrc" ]
 then
   . "$PERLBREW_ROOT/etc/bashrc"
 fi
@@ -11,31 +23,31 @@ fi
 if ! which perlbrew > /dev/null
 then
   echo "init perlbrew ..."
-  curl -kL https://install.perlbrew.pl | bash
-  echo "source $PERLBREW_ROOT/etc/bashrc" >> /root/.bashrc
-  . "$PERLBREW_ROOT/etc/bashrc"  # note sure if this is enough ... the docs require a new shell
-  perlbrew init
-  echo "perlbrew installion complete. You may need to open a new shell."
+  mkdir -p "$PERLBREW_ROOT"
+  curl -L https://install.perlbrew.pl | bash
+  if [ "$(uname)" = "Darwin" ]
+  then
+    echo "Please add \`source $PERLBREW_ROOT/etc/bashrc\` to your .profile"
+  else
+    echo "source $PERLBREW_ROOT/etc/bashrc" >> /root/.bashrc
+  fi
+  . "$PERLBREW_ROOT/etc/bashrc"
+  perlbrew init || exit 20
+  echo "perlbrew installion complete."
 fi
 
 if [ -z "$1" ]
 then
   # If invoked without args, one option might be to install the newest
-  # stable perl version. But getting that version number seems non-trivial.
+  # stable perl version. Getting that version number shouldn't be hard
+  # through the MetaCPAN API, but it may not be worth the effort.
   echo "perlbrew available:"
   perlbrew available
   exit 1
 fi
 
-#mkdir -p /opt/perlbrew
-#cd /opt/perlbrew
-#curl -LO https://cpan.metacpan.org/authors/id/G/GU/GUGOD/App-perlbrew-0.88.tar.gz
-#tar -xzf App-perlbrew-*.tar.gz
-#mv App-perlbrew-*/lib .
-#rm -Rf App-perlbrew-*
-
-#PERL_INSTALL_VERSION=$( perlbrew available | grep perl-5.30 | cut -b 3- )
-#PERL_INSTALL_VERSION=perl-5.30.2
+#PERL_INSTALL_VERSION=$( perlbrew available | grep perl-5.34 | sed -e 's/ //g' )
+#PERL_INSTALL_VERSION=perl-5.34.1
 PERL_INSTALL_VERSION="$1"
 echo "$1" | grep -q "perl" || PERL_INSTALL_VERSION="perl-$1"
 
@@ -44,42 +56,114 @@ echo "$1" | grep -q "perl" || PERL_INSTALL_VERSION="perl-$1"
 echo -n "Beginning to brew $PERL_INSTALL_VERSION: "
 date
 
-if which apt-get > /dev/null && ! which gcc make > /dev/null
+if which apt-get > /dev/null && ! which gcc g++ make > /dev/null
 then
-  DEBIAN_FRONTEND=noninteractive apt-get -y install gcc make
+  DEBIAN_FRONTEND=noninteractive apt-get -y install gcc g++ make
 fi
 
-# On dual core CPUs (like Solent), 2 jobs save a *lot* of time, while even more jobs save very little.
-BREW_JOBS=3
-perlbrew install -j "$BREW_JOBS" "$PERL_INSTALL_VERSION" || exit 21
-#perlbrew use "$PERL_INSTALL_VERSION"  # 'use' means this session only
-perlbrew switch "$PERL_INSTALL_VERSION"
-
-# update the bin/perl link
-mkdir -p /opt/bin
-if [ ! -e /opt/bin/perl ] || [ "$(realpath /opt/bin/perl)" = "/usr/bin/perl" ]
+if [ "$TESTING" = 0 ]
 then
-  rm -f /opt/bin/perl
-  ln -vs "/opt/perlbrew/perls/$PERL_INSTALL_VERSION/bin/perl" /opt/bin/perl
+  BREW_TEST="--notest"
 fi
+perlbrew install $BREW_TEST -j "$BREW_JOBS" "$PERL_INSTALL_VERSION" || exit 21
+perlbrew use "$PERL_INSTALL_VERSION" || exit 21
+echo -n "New perl binary: "
+which perl
 
 echo -n "Finished brewing Perl: "
 date
 
+if [ ! -e /opt/bin/perl ] || [ "$(perl -MCwd -E 'print Cwd::abs_path shift' /opt/bin/perl)" = "/usr/bin/perl" ]
+then
+  echo "Switching to $PERL_INSTALL_VERSION ..."
+  perlbrew switch "$PERL_INSTALL_VERSION" || exit 21
+  echo "Updating the /opt/bin/perl link ..."
+  sudo mkdir -p /opt/bin
+  sudo rm -f /opt/bin/perl
+  sudo ln -vs "$PERLBREW_ROOT/perls/$PERL_INSTALL_VERSION/bin/perl" /opt/bin/perl
+  CPANM_TEST="--notest"
+else
+  echo "WARNING: /opt/bin/perl link not updated."
+  # Because apparently this is a secondary installation, not a primary one.
+  SECONDARY=1
+  CPANM_TEST=""
+fi
 
 
+
+if [ "$TESTING" = 0 ]
+then
+  CPANM_TEST="--notest"
+elif [ "$TESTING" = 1 ]
+then
+  CPANM_TEST=""
+fi
 export TEST_JOBS="$BREW_JOBS"
-export TESTING="--notest"
-curl -L https://cpanmin.us | perl - App::cpanminus
+export NONINTERACTIVE_TESTING=1
+export PERL_MM_USE_DEFAULT=1
+perlbrew install-cpanm
 
-cpanm $TESTING App::cpanoutdated
-echo "Updating dual life modules:"
-cpan-outdated --verbose | sed -e 's/ *[^ ]*$//'
-cpan-outdated | cpanm $TESTING
+if [ -z "$SECONDARY" ]
+then
+  # Update dual-life modules, but only for the primary installation
+  # (secondary installations might be specifically for testing older versions)
+  cpanm $CPANM_TEST App::cpanoutdated
+  echo "Updating dual life modules:"
+  cpan-outdated --verbose | sed -e 's/ *[^ ]*$//'
+  cpan-outdated | cpanm $CPANM_TEST
+  echo -n "Finished updates: "
+  date
+fi
 
-# The brew tends to fail on the first try. As a last resort, --notest should help:
-# perlbrew --notest install perl-stable
-# perlbrew --force install perl-stable
 
-# Actually, there is an argument to be made for always installing with --notest:
-# <http://www.modernperlbooks.com/mt/2012/01/speed-up-perlbrew-with-test-parallelism.html#comment-1158>
+
+# Install MariaDB/MySQL modules separately without testing.
+# (Their test suites seem unreliable, e.g. Homebrew/MariaDB/mysql_config issue)
+echo "Installing common modules for MariaDB/MySQL:"
+export DBD_MYSQL_CONFIG=mariadb_config
+cpanm $CPANM_TEST --installdeps DBD::MariaDB DBD::mysql
+cpanm --notest DBD::MariaDB DBD::mysql
+
+if [[ -n "$TASK_BELIKE" && "$TASK_BELIKE" != "none" ]]
+then
+  : ${TASK:="Task::BeLike::$TASK_BELIKE"}
+fi
+
+if [ "$TASK" = "Task::BeLike::AJNN" ]
+then
+  echo "Installing common modules with $TASK from GitHub:"
+  TASK_DIR=`mktemp -dt "perl-modules.XXXXXX"` || exit 23
+  echo "$TASK_DIR"
+  cd "$TASK_DIR"
+  curl -LO https://raw.githubusercontent.com/johannessen/perl-modules/main/cpanfile
+  cpanm $CPANM_TEST --installdeps . || exit 23
+  rm -Rf "$TASK_DIR"
+  
+elif [ -n "$TASK" ]
+then
+  echo "Installing common modules with $TASK from CPAN:"
+  cpanm $CPANM_TEST --installdeps "$TASK" || exit 23
+  
+else
+  echo "No Task requested; installing a minimal set of common modules:"
+  cat <<__EOF__ | grep -v '^#' | cpanm $CPANM_TEST || exit 23
+IO::Socket::SSL
+Mojolicious
+__EOF__
+fi
+
+
+
+echo -n "Finished brew and module installation: "
+date
+if [ -z "$SECONDARY" ]
+then
+  echo "Switched to $PERL_INSTALL_VERSION as primary perl."
+fi
+CPANM_REPORTER="$PERLBREW_ROOT/perls/$PERL_INSTALL_VERSION/bin/cpanm-reporter"
+if [[ -z "$CPANM_TEST" && -x "$CPANM_REPORTER" ]]
+then
+  echo "You may wish to consider running:"
+  echo "perlbrew use $PERL_INSTALL_VERSION"
+  echo "cpanm-reporter"
+fi
