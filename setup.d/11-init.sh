@@ -21,6 +21,8 @@ setup_copy /etc/skel/.bashrc X
 setup_patch /etc/bash.bashrc
 setup_patch /root/.bashrc
 
+setup_patch /etc/vim/vimrc
+
 
 
 ### user accounts

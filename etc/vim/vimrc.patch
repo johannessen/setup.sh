@@ -1,0 +1,11 @@
+--- /etc/vim/vimrc	2021-03-02 02:58:00.000000000 +0000
++++ /etc/vim/vimrc	2022-03-26 03:07:00.000000000 +0000
+@@ -13,5 +13,7 @@
+ " If you don't want that to happen, uncomment the below line to prevent
+ " defaults.vim from being loaded.
+-" let g:skip_defaults_vim = 1
++source $VIMRUNTIME/defaults.vim
++let g:skip_defaults_vim = 1
++set mouse-=a
+ 
+ " Uncomment the next line to make Vim more Vi-compatible
