@@ -8,6 +8,8 @@ then
   : ${BREW_JOBS:=6}
   : ${PERLBREW_ROOT:=~/.perlbrew}
   : ${TASK_BELIKE:=AJNN}
+  : ${TESTING:=1}
+  export PERLBREW_CONFIGURE_FLAGS="-de -Duselongdouble"
 fi
 
 # On dual core CPUs, 2 jobs save a lot of time, while even more jobs save very little.
@@ -47,7 +49,7 @@ then
 fi
 
 #PERL_INSTALL_VERSION=$( perlbrew available | grep perl-5.34 | sed -e 's/ //g' )
-#PERL_INSTALL_VERSION=perl-5.34.1
+#PERL_INSTALL_VERSION=perl-5.38.0
 PERL_INSTALL_VERSION="$1"
 echo "$1" | grep -q "perl" || PERL_INSTALL_VERSION="perl-$1"
 
@@ -159,6 +161,7 @@ date
 if [ -z "$SECONDARY" ]
 then
   echo "Switched to $PERL_INSTALL_VERSION as primary perl."
+  echo "You may wish to open a new terminal."
 fi
 CPANM_REPORTER="$PERLBREW_ROOT/perls/$PERL_INSTALL_VERSION/bin/cpanm-reporter"
 if [[ -z "$CPANM_TEST" && -x "$CPANM_REPORTER" ]]
@@ -166,4 +169,7 @@ then
   echo "You may wish to consider running:"
   echo "perlbrew use $PERL_INSTALL_VERSION"
   echo "cpanm-reporter"
+elif [ -n "$CPANM_TEST" ]
+then
+  echo "Note: No CPAN module testing was performed."
 fi

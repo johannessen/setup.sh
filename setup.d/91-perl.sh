@@ -17,7 +17,7 @@ DEBIAN_FRONTEND=noninteractive apt-get -y install \
 
 setup_copy /root/perlbrew.sh X
 
-if /root/perlbrew.sh perl-5.34.1
+if TESTING=0 /root/perlbrew.sh perl-5.38.0
 then
   rm -Rf /root/.cpanm/work /root/.cpanm/latest-build /root/.cpanm/build.log
   rmdir /root/.cpanm || true
