@@ -31,7 +31,10 @@ sed -e "/^MYSQL_BACKUP_PASSWORD=.*/s//MYSQL_BACKUP_PASSWORD='--password=$MYSQL_B
 setup_copy /root/backup/export.sh X
 setup_copy /root/backup/import.sh 744
 setup_copy /root/backup/rotate.conf R
+setup_copy /root/backup/srv-export.sh X
+setup_copy /root/backup/srv-rotate.conf R
 setup_copy /etc/cron.hourly/backup X
+setup_copy /etc/cron.daily/backup-srv X
 
 
 

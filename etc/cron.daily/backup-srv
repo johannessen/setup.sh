@@ -1,0 +1,8 @@
+#!/bin/sh
+
+if test -x /usr/sbin/logrotate
+then
+  /usr/sbin/logrotate /root/backup/srv-rotate.conf
+fi
+
+/root/backup/srv-export.sh

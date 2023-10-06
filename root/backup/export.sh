@@ -3,12 +3,11 @@
 #set -x
 
 # Create the backup tarball and store it locally.
-# Inverse script: backupimport.sh
+# Inverse script: backup/import.sh
 
 
 BACKUPDIR=/root/backup/files
 BACKUPFILE=backup.tar
-BACKUPSRVFILE=srv.tar
 
 . /root/backup/credentials
 
@@ -16,8 +15,11 @@ BACKUPSRVFILE=srv.tar
 mkdir -p "$BACKUPDIR"
 cd "$BACKUPDIR"
 date >> backuptimestamp
-rm -f "$BACKUPFILE" databases.tar "$BACKUPSRVFILE"
-tar -cf "$BACKUPFILE" backuptimestamp
+hostname > backuphostname
+rm -f "$BACKUPFILE" databases.tar
+tar -cf "$BACKUPFILE" backuptimestamp backuphostname
+
+
 
 # installed-software log
 # we don't need this in a regular backup import, but no harm including it anyway
@@ -99,26 +101,5 @@ eval gpg $BACKUPKEYS --encrypt "$BACKUPFILE" && rm -f "$BACKUPFILE"
 
 
 
-# srv.tar
-# this is for:
-# - volatile / transient data (such as temp/dev files)
-# - large binaries that are not in repositories
-# - files that are not in repositories for legal reasons
-
-tar_append () {
-  if [ -e "$2" ]
-  then 
-    tar -rf "$1" "$2"
-  fi
-}
-
-tar -cf "$BACKUPSRVFILE" "backuptimestamp"
-cd /srv
-#tar -cf "$BACKUPDIR/$BACKUPSRVFILE" --exclude=Data --warning=no-file-changed *
-
-# append server files that need to be appended ...
-
-
-
 cd "$BACKUPDIR"
-rm -f backuptimestamp
+rm -f backuptimestamp backuphostname
