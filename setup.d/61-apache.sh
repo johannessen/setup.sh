@@ -11,7 +11,7 @@ APACHE_DIR=/etc/apache2
 
 for user in `awk -F':' '/^wheel/{print $4}' /etc/group | sed -e 's/,/ /g'`
 do
-  addgroup "$user" www-data
+  adduser "$user" www-data
 done
 
 mkdir -p /srv/Log/
@@ -24,9 +24,11 @@ setup_copy /etc/logrotate.d/apache2-srv R
 
 setup_patch "$APACHE_DIR/conf-available/security.conf"
 setup_patch "/etc/mime.types"
+# Defining a magic MIME type for .php is required for MultiViews
 
 a2enconf -q logging
 a2disconf -q charset
+a2disconf -q javascript-common
 a2disconf -q localized-error-pages
 a2disconf -q other-vhosts-access-log
 a2disconf -q serve-cgi-bin
@@ -49,7 +51,7 @@ a2enmod -q autoindex
 a2enmod -q env
 a2enmod -q mime
 a2enmod -q negotiation
-a2enmod -q php7.4
+a2enmod -q php8.2
 a2enmod -q socache_shmcb
 a2enmod -q ssl
 

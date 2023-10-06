@@ -1,15 +1,14 @@
 --- /etc/ssh/sshd_config	2019-04-24 17:27:00.000000000 +0000
 +++ /etc/ssh/sshd_config	2019-04-24 20:40:00.000000000 +0000
-@@ -106,5 +106,5 @@
+@@ -110,5 +110,5 @@
  
  # Allow client to pass locale environment variables
 -AcceptEnv LANG LC_*
 +#AcceptEnv LANG LC_*
  
  # override default of no subsystems
-@@ -119,3 +119,4 @@
+@@ -123,3 +123,3 @@
  
- PasswordAuthentication yes
+ PasswordAuthentication no
 -PermitRootLogin yes
 +PermitRootLogin prohibit-password
-+#PermitRootLogin yes

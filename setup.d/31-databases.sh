@@ -9,15 +9,16 @@ MYSQL_POSTFIX_PASSWORD=${MYSQL_POSTFIX_PASSWORD:-`setup_insecure_password mysql-
 
 # MySQL
 # local access is provided to root via socket connection
-# for remote access (SSH only), a rootssh user is added
+# for remote access (shell only); an optional rootssh user
+# is added to simplify SSH network access
 mysqladmin flush-privileges
 #SET PASSWORD FOR 'root'@'localhost' = PASSWORD('$MYSQL_ROOT_PASSWORD');
-##SET PASSWORD FOR 'root'@'127.0.0.1' = PASSWORD('$MYSQL_ROOT_PASSWORD');
-##SET PASSWORD FOR 'root'@'::1' = PASSWORD('$MYSQL_ROOT_PASSWORD');
-#DELETE FROM user WHERE user = 'root' AND password = '';
 mysql mysql --user=root <<EOF
+DROP USER IF EXISTS 'rootssh'@'127.0.0.1', 'rootssh'@'::1';
 CREATE USER 'rootssh'@'127.0.0.1' IDENTIFIED BY '$MYSQL_ROOT_PASSWORD';
 GRANT ALL PRIVILEGES ON *.* TO 'rootssh'@'127.0.0.1' WITH GRANT OPTION;
+CREATE USER 'rootssh'@'::1' IDENTIFIED BY '$MYSQL_ROOT_PASSWORD';
+GRANT ALL PRIVILEGES ON *.* TO 'rootssh'@'::1' WITH GRANT OPTION;
 FLUSH PRIVILEGES;
 EOF
 

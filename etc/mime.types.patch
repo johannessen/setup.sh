@@ -1,8 +1,9 @@
---- /etc/mime.types	2014-10-04 13:33:00.000000000 +0000
-+++ /etc/mime.types	2014-12-23 00:00:00.000000000 +0000
-@@ -1468 +1468 @@
--#application/x-httpd-php			phtml pht php
+--- /etc/mime.types	2023-02-11 14:45:00.000000000 +0000
++++ /etc/mime.types	2023-09-04 14:02:00.000000000 +0000
+@@ -1549,4 +1549,6 @@
+ application/x-gtar-compressed			tgz taz
+ application/x-hdf				hdf
 +application/x-httpd-php			phtml pht php
-@@ -1473 +1473 @@
--#application/x-httpd-php-source			phps
 +application/x-httpd-php-source			phps
+ application/x-hwp				hwp
+ application/x-ica				ica
