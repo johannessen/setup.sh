@@ -26,6 +26,22 @@ setup_patch "$APACHE_DIR/conf-available/security.conf"
 setup_patch "/etc/mime.types"
 # Defining a magic MIME type for .php is required for MultiViews
 
+(
+  # Avoid intermittent AH00558 errors from cron.daily/apachessl
+  servername=$(cat /etc/default/hostname_vps)
+  if [ -z "$servername" ]
+  then
+    echo "\$HOSTNAME_VPS not set."
+    echo "Skipping creation of servername.conf."
+  else
+    cat - > /etc/apache2/conf-available/servername.conf <<EOF
+ServerName $servername
+# Created by setup.d/61-apache.sh
+EOF
+    a2enconf -q servername
+  fi
+)
+
 a2enconf -q logging
 a2disconf -q charset
 a2disconf -q javascript-common
