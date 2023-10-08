@@ -60,11 +60,16 @@ setup_copy () {
   then
     PATH_REP="$SETUPPATH_GLOBAL$1"
     SOURCE_MSG=global
+    if [ ! -e "$PATH_REP" ]
+    then
+      echo "setup_copy error 3: '$1' '$2' (file missing)" && return 3
+    fi
   fi
   
   if ! setup_repo_permissions "$PATH_REP" $2  # 2nd arg is optional
   then
-    echo "setup_copy error 3: '$1' '$2' ($SOURCE_MSG)" && return 3
+    # probably never happens
+    echo "setup_copy error 4: '$1' '$2' ($SOURCE_MSG)" && return 4
   fi
   
   [ -e "$PATH_SYS" ] && mv -v "$PATH_SYS" "$PATH_REP.orig"
