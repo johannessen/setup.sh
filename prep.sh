@@ -53,6 +53,8 @@ prep_setup_dir () {
   done
   
   prep_tar_append "$SETUPFILE" "$1/etc"
+  prep_tar_append "$SETUPFILE" "$1/home"
+  prep_tar_append "$SETUPFILE" "$1/opt"
   prep_tar_append "$SETUPFILE" "$1/root"
   prep_tar_append "$SETUPFILE" "$1/srv"
   
