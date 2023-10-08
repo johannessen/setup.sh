@@ -43,6 +43,7 @@ postfix
 
 # Apache (Wordpress etc.)
 apache2
+php-fpm
 php
 php-bcmath
 php-curl

@@ -36,7 +36,7 @@ a2disconf -q serve-cgi-bin
 a2enmod -q actions
 #a2enmod -q auth_digest
 a2enmod -q authz_groupfile
-a2enmod -q cgi
+a2enmod -q cgid
 a2enmod -q expires
 a2enmod -q headers
 a2enmod -q include
@@ -51,9 +51,22 @@ a2enmod -q autoindex
 a2enmod -q env
 a2enmod -q mime
 a2enmod -q negotiation
-a2enmod -q php8.2
+a2enmod -q setenvif
 a2enmod -q socache_shmcb
 a2enmod -q ssl
+
+# Use PHP-FPM with event MPM instead of php_mod with prefork MPM
+setup_patch "$APACHE_DIR/mods-available/mpm_prefork.conf"
+setup_patch "$APACHE_DIR/mods-available/mpm_event.conf"
+setup_copy "$APACHE_DIR/conf-available/php8.2-fpm.conf" R
+setup_copy_maybe /etc/php/8.2/fpm/conf.d/global-setup.ini R
+systemctl restart php8.2-fpm
+echo -n "Trying to disable mod_php ... "
+a2dismod -q php8.2 || true
+a2enconf -q php8.2-fpm
+a2enmod -q proxy_fcgi
+a2dismod -q mpm_prefork
+a2enmod -q mpm_event
 
 setup_copy "$APACHE_DIR/conf-available/ssl.conf" R
 a2enconf -q ssl
