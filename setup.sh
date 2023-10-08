@@ -124,6 +124,7 @@ do
     echo "Running setup script '$f' ($s)."
     if ! (( "$SETUP_DRY_RUN" ))
     then
+      sleep 2
       SETUP_FILE="$SETUP_LOCAL_DIR/$f"
       . "$SETUP_FILE"
       mv -n "$SETUP_FILE" "$SETUP_LOCAL_FINISHED/"
@@ -134,6 +135,7 @@ do
     echo "Running setup script '$f'."
     if ! (( "$SETUP_DRY_RUN" ))
     then
+      sleep 2
       SETUP_FILE="$SETUP_GLOBAL_DIR/$f"
       . "$SETUP_FILE"
       mv -n "$SETUP_FILE" "$SETUP_GLOBAL_FINISHED/"
